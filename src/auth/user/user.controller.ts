@@ -1,5 +1,5 @@
 // user.controller.ts
-import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Request } from '@nestjs/common';
 import { User } from './user.entity';
 import { UserService } from './user.service';
 import { AuthGuard } from '../../guards/auth.guard';
@@ -21,6 +21,18 @@ export class UserController {
   @Post('register')
   register(@Body() user: User): Promise<User> {
     return this.userService.register(user);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/check-token')
+  checkToken(@Request() req: Request) {
+    const user = req['user'] as User;
+
+    return {
+      user,
+      token: this.userService.getJwtToken({ id: user.id.toString() })
+    }
+
   }
 
   @Post('login')

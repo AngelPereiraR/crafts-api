@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import * as bcryptjs from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from './interfaces/jwt-payload';
 
 @Injectable()
 export class UserService {
@@ -79,5 +80,10 @@ export class UserService {
       throw new NotFoundException(`Usuario con id ${id} no encontrado`);
     }
     await this.userRepository.remove(user);
+  }
+
+  getJwtToken(payload: JwtPayload) {
+    const token = this.jwtService.sign(payload, { expiresIn: '1 hour' });
+    return token;
   }
 }
