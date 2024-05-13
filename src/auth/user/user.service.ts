@@ -49,14 +49,22 @@ export class UserService {
   }
 
   async login(email: string, password: string): Promise<Object> {
-    const user = await this.userRepository.findOne({ where: { email } });
-    if (!user || !(await bcryptjs.compare(password, user.password))) {
-      throw new UnauthorizedException('Credenciales inválidas');
+    const user = await this.userRepository.findOneBy({ email });
+
+    if (!user) {
+      throw new UnauthorizedException('Not valid credentials - email');
     }
 
-    const token = await this.jwtService.signAsync({id: user.id}, {secret: process.env.JWT_SEED});
-    const newUser = {...user, token}
-    return newUser;
+    if (!bcryptjs.compareSync(password, user.password)) {
+      throw new UnauthorizedException('Not valid credentials - password');
+    }
+
+    const { password: _, ...rest } = user;
+
+    return {
+      user: rest,
+      token: this.getJwtToken({ id: user.id.toString() }),
+    };
   }
 
   async updateUser(id: number, userData: Partial<User>): Promise<User> {
@@ -83,7 +91,7 @@ export class UserService {
   }
 
   getJwtToken(payload: JwtPayload) {
-    const token = this.jwtService.sign(payload, { expiresIn: '1 hour' });
+    const token = this.jwtService.sign(payload, { expiresIn: '6 hours' });
     return token;
   }
 }
