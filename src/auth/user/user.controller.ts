@@ -13,6 +13,18 @@ export class UserController {
     return this.userService.findAll();
   }
 
+  @UseGuards(AuthGuard)
+  @Get('/check-token')
+  checkToken(@Request() req: Request) {
+    const user = req['user'] as User;
+
+    return {
+      user,
+      token: this.userService.getJwtToken({ id: user.id, name: user.name, email: user.email })
+    }
+
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string): Promise<User> {
     return this.userService.findOne(parseInt(id, 10));
@@ -21,18 +33,6 @@ export class UserController {
   @Post('register')
   register(@Body() user: User): Promise<User> {
     return this.userService.register(user);
-  }
-
-  @UseGuards(AuthGuard)
-  @Get('/check-token')
-  checkToken(@Request() req: Request) {
-    const user = req['user'] as User;
-
-    return {
-      user,
-      token: this.userService.getJwtToken({ id: user.id.toString() })
-    }
-
   }
 
   @Post('login')

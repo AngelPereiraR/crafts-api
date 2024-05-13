@@ -12,7 +12,7 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    private readonly jwtService: JwtService,
+    private jwtService: JwtService,
   ) {}
 
   async findAll(): Promise<User[]> {
@@ -63,7 +63,7 @@ export class UserService {
 
     return {
       user: rest,
-      token: this.getJwtToken({ id: user.id.toString() }),
+      token: this.getJwtToken({ id: rest.id, name: rest.name, email: rest.email }),
     };
   }
 
@@ -91,7 +91,7 @@ export class UserService {
   }
 
   getJwtToken(payload: JwtPayload) {
-    const token = this.jwtService.sign(payload, { expiresIn: '6 hours' });
+    const token = this.jwtService.sign(payload, { expiresIn: '6h', secret: `${process.env.JWT_SEED}` });
     return token;
   }
 }
